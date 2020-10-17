@@ -2,6 +2,10 @@
 
 import cupom
 import pytest
+import unittest
+from datetime import datetime
+
+test = unittest.TestCase()
 
 
 def verifica_campo_obrigatorio_objeto(mensagem_esperada, loja):
@@ -10,6 +14,12 @@ def verifica_campo_obrigatorio_objeto(mensagem_esperada, loja):
     the_exception = excinfo.value
     assert mensagem_esperada == str(the_exception)
 
+
+def verifica_campo_obrigatorio_Venda(mensagem_esperada, venda):
+    with pytest.raises(Exception) as excinfo:
+        venda.dados_venda()
+    the_exception = excinfo.value
+    assert mensagem_esperada == str(the_exception)
 
 # Todas as variaveis preenchidas
 NOME_LOJA = "Loja 1"
@@ -24,6 +34,9 @@ TELEFONE = "(11) 1111-1111"
 OBSERVACAO = "Obs 1"
 CNPJ = "11.111.111/1111-11"
 INSCRICAO_ESTADUAL = "123456789"
+CCF_VENDA = "021784"
+COO_VENDA = "035804"
+
 
 ENDERECO_COMPLETO = cupom.Endereco(LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO,
                                    MUNICIPIO, ESTADO, CEP)
@@ -305,8 +318,9 @@ def test_valida_inscricao_estadual():
     verifica_campo_obrigatorio_objeto(
         "O campo inscrição estadual da loja é obrigatório", LOJA_IE_VAZIA)
 
-ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO = cupom.Endereco(LOGRADOURO, 0, None, BAIRRO,
-                                   MUNICIPIO, ESTADO, CEP)
+ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO = cupom.Endereco(LOGRADOURO, 0, None,
+                                                    BAIRRO, MUNICIPIO, ESTADO,
+                                                    CEP)
 
 LOJA_SEM_NUMERO_SEM_COMPLEMENTO = cupom.Loja(NOME_LOJA, ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO,
                                              TELEFONE, OBSERVACAO, CNPJ,
@@ -324,9 +338,10 @@ IE: 123456789'''
 def test_valida_numero_e_complemento():
     assert LOJA_SEM_NUMERO_SEM_COMPLEMENTO.dados_loja() == TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO
 
+ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO = cupom.Endereco(LOGRADOURO, 0, None,
+                                                    None, MUNICIPIO, ESTADO,
+                                                    CEP)
 
-ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO = cupom.Endereco(LOGRADOURO, 0, None, None,
-                                   MUNICIPIO, ESTADO, CEP)
 LOJA_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO = cupom.Loja(NOME_LOJA, 
                                                         ENDERECO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO, 
                                                         TELEFONE, OBSERVACAO,
@@ -345,22 +360,29 @@ IE: 123456789'''
 def test_valida_numero_complemento_e_bairro():
     assert LOJA_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO.dados_loja() == TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO
 
+TEXTO_ESPERADO_TEST_EXERCICIO2_CUSTOMIZADO = '''Boa vista Flores
+Rua Jardim Peres, 122 EUC F30/31/44
+Centro - Monteiro - PB
+CEP:585000000 Tel (99) 9999999
+LOja 122 (PDB)
+CNPJ: 22.300.999.555/0110-56
+IE: 432.118.667.777'''
 
 def test_exercicio2_customizado():
 
     # Defina seus próprios valores para as variáveis a seguir
-    nome_loja = ""
-    logradouro = ""
-    numero = 0
-    complemento = ""
-    bairro = ""
-    municipio = ""
-    estado = ""
-    cep = ""
-    telefone = ""
-    observacao = ""
-    cnpj = ""
-    inscricao_estadual = ""
+    nome_loja = "Boa vista Flores"
+    logradouro = "Rua Jardim Peres"
+    numero = 122
+    complemento = "EUC F30/31/44"
+    bairro = "Centro"
+    municipio = "Monteiro"
+    estado = "PB"
+    cep = "585000000"
+    telefone = "(99) 9999999"
+    observacao = "LOja 122 (PDB)"
+    cnpj = "22.300.999.555/0110-56"
+    inscricao_estadual = "432.118.667.777"
 
     endereco_customizado = cupom.Endereco(logradouro, numero, complemento,
                                  bairro, municipio, estado, cep)
@@ -368,5 +390,67 @@ def test_exercicio2_customizado():
                                  observacao, cnpj, inscricao_estadual)
 
     # E atualize o texto esperado abaixo
-    assert (loja_customizada.dados_loja() == """
-""")
+    assert (loja_customizada.dados_loja() == TEXTO_ESPERADO_TEST_EXERCICIO2_CUSTOMIZADO)
+
+TEXTO_ESPERADO_CUPOM_FISCAL = '''Loja 1
+Log 1, 10 C1
+Bai 1 - Mun 1 - E1
+CEP:11111-111 Tel (11) 1111-1111
+Obs 1
+CNPJ: 11.111.111/1111-11
+IE: 123456789
+------------------------------
+25/11/2020 10:30:40V CCF:021784 COO: 035804'''
+
+
+DATA_HORA_VENDA = datetime(2020, 11, 25, 10, 30, 40)
+
+
+#validações
+
+LOJA_VAZIA = cupom.Venda("", DATA_HORA_VENDA, CCF_VENDA, COO_VENDA)
+LOJA_NULA = cupom.Venda(None, DATA_HORA_VENDA, CCF_VENDA, COO_VENDA)
+
+DATA_HORA_VAZIO = cupom.Venda(LOJA_COMPLETA, "", CCF_VENDA, COO_VENDA)
+DATA_HORA_NULO = cupom.Venda(LOJA_COMPLETA, None, CCF_VENDA, COO_VENDA) 
+
+CCF_VENDA_VAZIO = cupom.Venda(LOJA_COMPLETA, DATA_HORA_VENDA, "", COO_VENDA)
+CCF_VENDA_NULO = cupom.Venda(LOJA_COMPLETA, DATA_HORA_VENDA, None, COO_VENDA)
+
+COO_VENDA_VAZIO = cupom.Venda(LOJA_COMPLETA, DATA_HORA_VENDA, CCF_VENDA, "")
+COO_VENDA_NULO = cupom.Venda(LOJA_COMPLETA, DATA_HORA_VENDA, CCF_VENDA, None)
+
+#testes campos obrigatórios
+
+def test_valida_loja():
+    verifica_campo_obrigatorio_Venda(
+        "O campo loda da venda é obrigatório", LOJA_VAZIA)
+    verifica_campo_obrigatorio_Venda(
+        "O campo loda da venda é obrigatório", LOJA_NULA)
+
+
+def test_valida_datahora():
+    verifica_campo_obrigatorio_Venda(
+        "O campo datahora da venda é obrigatório", DATA_HORA_VAZIO)
+    verifica_campo_obrigatorio_Venda(
+        "O campo datahora da venda é obrigatório", DATA_HORA_NULO)
+
+
+def test_valida_ccf():
+    verifica_campo_obrigatorio_Venda(
+        "O campo ccf da venda é obrigatório", CCF_VENDA_VAZIO)
+    verifica_campo_obrigatorio_Venda(
+        "O campo ccf da venda é obrigatório", CCF_VENDA_NULO)
+
+
+def test_valida_coo():
+    verifica_campo_obrigatorio_Venda(
+        "O campo coo da venda é obrigatório", COO_VENDA_VAZIO)
+    verifica_campo_obrigatorio_Venda(
+        "O campo coo da venda é obrigatório", COO_VENDA_NULO)
+
+#testes
+venda = cupom.Venda(LOJA_COMPLETA, DATA_HORA_VENDA, CCF_VENDA, COO_VENDA)
+
+def test_cupom_fiscal():
+    test.assertEqual(TEXTO_ESPERADO_CUPOM_FISCAL, venda.imprime_cupom())
